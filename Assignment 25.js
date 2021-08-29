@@ -31,12 +31,12 @@ function createGrid() {
     for (var i = 0; i <= 40; i++) {
         master[i] = ([xArray[k], yArray[j]]);
         // increase j by one to increase y value
-        j += 1;
+        k += 1;
         // if we hit 6 in j, we need to increase x value by one and reset j
-        if (j == 7) {
+        if (k == 7) {
             master[i] = push;
-            k += 1;
-            j = 0;
+            j += 1;
+            k = 0;
         }
     }
     console.log(master);
