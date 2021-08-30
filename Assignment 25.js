@@ -1,44 +1,54 @@
+var master = [];
+
 function onload() {
     document.getElementById("inputButton").onclick = function() {
         var start = Date.now();
 
-        // takes inputs
-        var xValue = document.getElementById("inputX").value;
-        var yValue = document.getElementById("inputY").value;
+        // take inputs
+        var x = document.getElementById("xInput").value;
+        var y = document.getElementById("yInput").value;
 
         // building a maze
-        document.getElementById("output").innerHTML = createGrid().join(" ");
+        master = createGrid(x,y);
+        console.log(master);
+        document.getElementById("output").innerHTML = gridOutput(master);
 
         var end = Date.now() - start;
         document.getElementById("runTime").innerHTML = end;
     }
 }
 
-function createGrid() {
+function createGrid(x,y) {
     // Need to create a master array
-    var master = [];
+    master = [];
 
     // x and y arrays
-    var xArray = [0,1,2,3,4,5]
-    var yArray = [0,1,2,3,4,5]
+    var row = [];
 
-    // tracking var to increase x value
-    var k = 0;
-    var j = 0;
-    var push = "<br>";
+    // add inputs to arrays
+    for (var i = 0; i < y; i++) {
+        for (var j = 0; j < x; j++) {
+            row.push(j + "," + i);
+        }
+        master[i] = row;
+        row = [];
+    }
+    // take the array out
+    return master;
+}
 
-    // add arrays together to create a new array?
-    for (var i = 0; i <= 40; i++) {
-        master[i] = ([xArray[k], yArray[j]]);
-        // increase j by one to increase y value
-        k += 1;
-        // if we hit 6 in j, we need to increase x value by one and reset j
-        if (k == 7) {
-            master[i] = push;
-            j += 1;
-            k = 0;
+function gridOutput(master) {
+    var output = "";
+
+    // looping x amount of times for the horizontal bracket
+    for (var i = 0; i < master.length; i++) {
+        for (var j = 0; j < master[i].length; j++) {
+            output += master[i][j] + " ";
+        }
+        // adding two line breaks for readability
+        for (var j = 0; j < 2; j++) {
+            output += ("<br>");
         }
     }
-    console.log(master);
-    return master;
+    return output;
 }
