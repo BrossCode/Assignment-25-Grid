@@ -1,108 +1,107 @@
-var master = [];
-var hero = {x: 0, y:0};
-var x = 0;
-var y = 0;
+var Constants = { EMPTY: "_", PLAYER: "P"}
+var GameObjects = {WALL: "W", STAIRS: "S", EMPTY: "_"}
+var player = {x: 0, y: 0}
+var game = {w: 5, h:6, walls: 4, stairs: 1}
+var dungeon = []
+var floorCounter = 0;
 
-function onload() {
-    document.getElementById("inputButton").onclick = function() {
-        var start = Date.now();
+function hello() { 
+    makeDungeon(game.w, game.h)
+    render(dungeon)
+    document.onkeydown = function() {
 
-        // take inputs
-        x = document.getElementById("xInput").value;
-        y = document.getElementById("yInput").value;
-
-        // building a maze
-        master = createGrid(x,y);
-        console.log(master);
-        document.getElementById("output").innerHTML = gridOutput(master);
-
-
-        var end = Date.now() - start;
-        document.getElementById("runTime").innerHTML = end;
-    }
-    document.getElementById("up").onclick = function() {  moveUp(hero, y); 
-    document.getElementById("output").innerHTML = gridOutput(master,hero.x,hero.y);
-    }
-    document.getElementById("left").onclick = function() { moveLeft(hero, x); 
-    document.getElementById("output").innerHTML = gridOutput(master,hero.x,hero.y);
-    }
-    document.getElementById("right").onclick = function() { moveRight(hero, x);
-    document.getElementById("output").innerHTML = gridOutput(master,hero.x,hero.y);
-    }
-    document.getElementById("down").onclick = function(){ moveDown(hero, y);
-    document.getElementById("output").innerHTML = gridOutput(master,hero.x,hero.y);
+        if (event.keyCode == '40') {
+            move(0, 1)
+            // down arrow
+        }
+        else if (event.keyCode == '38') {
+            move(0, -1)
+            // up arrow
+        }
+        else if (event.keyCode == '37') {
+            move(-1, 0)
+           // left arrow
+        }
+        else if (event.keyCode == '39') {
+            move(1, 0)
+           // right arrow
+        }
     }
 }
 
-function createGrid(x,y) {
-    // Need to create a master array
-    master = [];
-
-    // x and y arrays
-    var row = [];
-
-    // add inputs to arrays
-    for (var i = 0; i < y; i++) {
-        for (var j = 0; j < x; j++) {
-            // change it to X, the index is not the string I saved.
-            row.push("X");
+function makeDungeon(x, y){
+    dungeon = [];
+    for(let i = 0; i < x; i++){
+        let row = []
+        for(let j = 0; j < y; j++){
+            row[j] = {obj: GameObjects.EMPTY}
         }
-        master[i] = row;
-        row = [];
+        dungeon.push(row)
     }
-    // take the array out
-    return master;
+    floorCounter += 1;
+    makeWalls(game.walls)
+    makeStairs(game.stairs)
+    document.getElementById("counter").innerHTML = floorCounter;
 }
 
-// need to reprint the dungeon for hero movement
-function gridOutput(master) {
-    var output = "";
-
-    // looping x amount of times for the horizontal bracket
-    for (var i = 0; i < master.length; i++) {
-        for (var j = 0; j < master[i].length; j++) {
-            if (hero.x == j && hero.y == i) {
-                // place hero down and update when it moves
-                 output += "O" + " ";
-                }
-            else {
-            // call on the Index for that location.
-             output += master[i][j] + " ";
-            }
-        }
-        // adding two line breaks for readability
-        for (var j = 0; j < 2; j++) {
-            output += ("<br>");
+function makeWalls(n){
+    let wallsLeft = n
+    while(wallsLeft > 0){
+        let y = Math.floor(Math.random() * dungeon[0].length)
+        let x = Math.floor(Math.random() * dungeon.length)
+        if(dungeon[x][y].obj == GameObjects.EMPTY && !(player.x == x && player.y == y)){
+            wallsLeft -= 1
+            dungeon[x][y].obj = GameObjects.WALL
         }
     }
-    return output;
 }
 
-function moveUp(hero, y) {
-        hero.y += 1;
-        if (hero.y > y - 1) {
-            hero.y -= 1;
+function makeStairs(n,) {
+    let needstairs = 0;
+    while (needstairs < n) {
+        let y = Math.floor(Math.random() * dungeon[0].length)
+        let x = Math.floor(Math.random() * dungeon.length)
+        if(dungeon[x][y].obj == GameObjects.EMPTY && !(player.x == x && player.y == y)){
+            needstairs += 1;
+            dungeon[x][y].obj = GameObjects.STAIRS
         }
-        console.log(hero.x , hero.y);
+    }
 }
-function moveDown(hero, y) {
-        hero.y -= 1;
-        if (hero.y < 0) {
-            hero.y += 1;
-        }
-        console.log(hero.x , hero.y);
+
+function move(dx, dy, x, y){
+    let newx = player.x + dx
+    let newy = player.y + dy
+    if(newx < 0) newx = 0
+    if(newy < 0) newy = 0
+    if(newx > dungeon.length-1) newx = dungeon.length-1
+    if(newy > dungeon[0].length-1) newy = dungeon[0].length-1
+    if(dungeon[newx][newy].obj == GameObjects.EMPTY){
+        player.x = newx
+        player.y = newy
+        render(dungeon)
+    }
+    else if(dungeon[newx][newy].obj == GameObjects.STAIRS){
+        player.x = newx
+        player.y = newy
+        makeDungeon(game.w, game.h)
+        render(dungeon)
+    }
+
 }
-function moveRight(hero, x) {
-        hero.x += 1;
-        if (hero.x > x - 1) {
-            hero.x -= 1;
+
+function getDungeonString() {
+    let s = ""
+    for(let i = 0 ; i < dungeon[0].length; i++){
+        for(let j = 0; j < dungeon.length; j++){
+            if(player.y == i && player.x == j) s += Constants.PLAYER
+            else s += dungeon[j][i].obj
+            s += " "
         }
-        console.log(hero.x , hero.y);
+        s += "<br>"
+    }
+    return s
 }
-function moveLeft(hero, x) {
-        hero.x -= 1;
-        if (hero.x < 0) {
-            hero.x += 1;
-        }
-        console.log(hero.x , hero.y);
+
+function render(dungeon){
+    document.getElementById("output").innerHTML = getDungeonString(dungeon);
 }
