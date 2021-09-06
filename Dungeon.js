@@ -4,29 +4,67 @@ var player = {x: 0, y: 0}
 var game = {w: 5, h:6, walls: 4, stairs: 1}
 var dungeon = []
 var floorCounter = 0;
+var timer;
+var lost = false;
+var timeLimit = 5;
+var timePassed = 0;
 
 function hello() { 
-    makeDungeon(game.w, game.h)
-    render(dungeon)
-    document.onkeydown = function() {
+    // need on off switch
+    var toggled = false;
 
-        if (event.keyCode == '40') {
-            move(0, 1)
-            // down arrow
+    // switch the status of the button
+    document.getElementById("timer").onclick = function toggle() {
+        document.getElementById("timer").innerHTML = "Game In Progress.";
+        lost = false;
+        makeDungeon(game.w, game.h)
+        render(dungeon)
+        document.onkeydown = function() {
+
+            if (lost == false && toggled == true) {
+                if (event.keyCode == '40') {
+                    move(0, 1)
+                    // down arrow
+                }
+                else if (event.keyCode == '38') {
+                    move(0, -1)
+                    // up arrow
+                }
+                else if (event.keyCode == '37') {
+                    move(-1, 0)
+                // left arrow
+                }
+                else if (event.keyCode == '39') {
+                    move(1, 0)
+                // right arrow
+                }
+            }
         }
-        else if (event.keyCode == '38') {
-            move(0, -1)
-            // up arrow
+        if (toggled == false) {
+            toggled = true;
+
+            timer = setInterval(function(){
+            timeLimit = 5 - (timePassed*0.1);
+            timePassed = timePassed + 1;
+            console.log(timeLimit + " Seconds Remaining.");
+                
+
+            // failstate
+                if (timeLimit < 0.1) {
+                    clearInterval(timer);
+                    console.log("You Lose");
+                    lost = true;
+                    timeLimit = 5;
+                    timePassed = 0;
+                    floorCounter = 0;
+                    toggled = false;
+                    document.getElementById("timer").innerHTML = "Restart";
+                    return lost;
+                }
+
+            }, 100);
+            }
         }
-        else if (event.keyCode == '37') {
-            move(-1, 0)
-           // left arrow
-        }
-        else if (event.keyCode == '39') {
-            move(1, 0)
-           // right arrow
-        }
-    }
 }
 
 function makeDungeon(x, y){
@@ -38,7 +76,6 @@ function makeDungeon(x, y){
         }
         dungeon.push(row)
     }
-    floorCounter += 1;
     makeWalls(game.walls)
     makeStairs(game.stairs)
     document.getElementById("counter").innerHTML = floorCounter;
@@ -68,7 +105,7 @@ function makeStairs(n,) {
     }
 }
 
-function move(dx, dy, x, y){
+function move(dx, dy){
     let newx = player.x + dx
     let newy = player.y + dy
     if(newx < 0) newx = 0
@@ -81,8 +118,10 @@ function move(dx, dy, x, y){
         render(dungeon)
     }
     else if(dungeon[newx][newy].obj == GameObjects.STAIRS){
-        player.x = newx
-        player.y = newy
+        player.x = newx;
+        player.y = newy;
+        timePassed = 0;
+        floorCounter += 1;
         makeDungeon(game.w, game.h)
         render(dungeon)
     }
